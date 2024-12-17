@@ -115,5 +115,5 @@ def logout():
     flash('Вы вышли из системы.', 'success')
     return redirect(url_for('index'))
 
-#if __name__ == '__main__':
-app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
