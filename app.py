@@ -249,7 +249,7 @@ def db_connect():
         return conn, cur
     except Exception as e:
         print(f"Ошибка подключения к базе данных: {e}")
-        return None, None
+        return redirect(url_for('login'))
 
 
 # Главная страница перенаправляет на страницу входа
