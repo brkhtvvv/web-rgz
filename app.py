@@ -400,20 +400,22 @@
 from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 import psycopg2
+import sqlite3
 from psycopg2.extras import RealDictCursor
 import os
+from os import path
 
 # Настройка приложения Flask
 app = Flask(__name__)
-app.secret_key = 'секретно-секретный секрет'  # Замените на свой секретный ключ
-
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'секретно-секретный секрет')
+app.config['DB_TYPE'] = os.getenv('DB_TYPE', 'postgres')
 # Путь для загрузки аватарок
 UPLOAD_FOLDER = 'static/avatars'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Конфигурация базы данных
-app.config['DB_TYPE'] = 'postgres'  # Можно переключить на 'sqlite', если потребуется
+# app.config['DB_TYPE'] = 'postgres'  # Можно переключить на 'sqlite', если потребуется
 
 # Функция подключения к базе данных
 def db_connect():
@@ -427,7 +429,11 @@ def db_connect():
             )
             cur = conn.cursor(cursor_factory=RealDictCursor)
         else:
-            raise Exception("Не поддерживается тип базы данных.")
+            dir_path = path.dirname(path.realpath(__file__))
+            db_path = path.join(dir_path, "database.db")
+            conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
         return conn, cur
     except Exception as e:
         print(f"Ошибка подключения к базе данных: {e}")
@@ -477,15 +483,23 @@ def register():
         # Проверка существующего пользователя и регистрация
         conn, cur = db_connect()
         try:
-            cur.execute("SELECT login FROM users WHERE login=%s;", (login,))
+            if current_app.config['DB_TYPE'] == 'postgres':
+                cur.execute("SELECT login FROM users WHERE login=%s;", (login,))
+            else:
+                cur.execute("SELECT login_user FROM users WHERE login_user=?;", (login, ))
             if cur.fetchone():
                 flash('Такой пользователь уже существует.', 'error')
                 return redirect(url_for('register'))
-
-            cur.execute("""
-                INSERT INTO users (login, password, fullname, email, about, avatar)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (login, hashed_password, fullname, email, about, avatar_filename))
+            if current_app.config['DB_TYPE'] == 'postgres':
+                cur.execute("""
+                    INSERT INTO users (login, password, fullname, email, about, avatar)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (login, hashed_password, fullname, email, about, avatar_filename))
+            else:
+                                cur.execute("""
+                    INSERT INTO users (login, password, fullname, email, about, avatar)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (login, hashed_password, fullname, email, about, avatar_filename))
             conn.commit()
             flash('Регистрация прошла успешно!', 'success')
             return redirect(url_for('login'))
@@ -510,7 +524,10 @@ def login():
 
         conn, cur = db_connect()
         try:
-            cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
+            if current_app.config['DB_TYPE'] == 'postgres':
+                cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
+            else:
+                cur.execute("SELECT * FROM users WHERE login_user=?;", (login,))
             user = cur.fetchone()
             if user and check_password_hash(user['password'], password):
                 session['user_id'] = user['id']
