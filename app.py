@@ -246,7 +246,7 @@ def db_connect():
             password='123'
         )
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        return conn, cur
+        return redirect(url_for('login'))
     except Exception as e:
         print(f"Ошибка подключения к базе данных: {e}")
         return redirect(url_for('login'))
