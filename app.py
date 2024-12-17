@@ -238,14 +238,19 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Функция подключения к базе данных
 def db_connect():
-    conn = psycopg2.connect(
-        host='127.0.0.1',
-        database='olga_barkhatova_knowledge_bace',
-        user='olga_barkhatova_knowledge_bace',  # Укажите ваше имя пользователя БД
-        password='123'  # Укажите ваш пароль
-    )
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    return conn, cur
+    try:
+        conn = psycopg2.connect(
+            host='127.0.0.1',
+            database='olga_barkhatova_knowledge_bace',
+            user='olga_barkhatova_knowledge_bace',
+            password='123'
+        )
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        return conn, cur
+    except Exception as e:
+        print(f"Ошибка подключения к базе данных: {e}")
+        return None, None
+
 
 # Главная страница перенаправляет на страницу входа
 @app.route("/")
