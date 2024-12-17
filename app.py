@@ -442,7 +442,7 @@ def db_close(conn, cur):
 # Главная страница
 @app.route("/")
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for('register'))
 
 # Регистрация
 @app.route('/register', methods=['GET', 'POST'])
