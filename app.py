@@ -6,7 +6,7 @@ import os
 
 # Настройка приложения Flask
 app = Flask(__name__)
-app.secret_key = 'super_secret_key'  # Замените на свой секретный ключ
+app.secret_key = 'секретно-секретный секрет'  # Замените на свой секретный ключ
 
 # Путь для загрузки аватарок
 UPLOAD_FOLDER = 'static/avatars'
@@ -115,5 +115,5 @@ def logout():
     flash('Вы вышли из системы.', 'success')
     return redirect(url_for('index'))
 
-if __name__ == '__main__':
-    app.run(debug=True)
+#if __name__ == '__main__':
+app.run(debug=True)
