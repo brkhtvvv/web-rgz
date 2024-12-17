@@ -1,19 +1,120 @@
-# from flask import Flask, request, render_template, redirect, url_for, session, flash
-# from werkzeug.security import generate_password_hash, check_password_hash
-# import psycopg2
-# from psycopg2.extras import RealDictCursor
-# import os
+from flask import Flask, request, render_template, redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import os
 
-print('kkkkkkkkkkkkkkkkkkkkkkkkkkk')
 # Настройка приложения Flask
-# app = Flask(__name__)
-# app.secret_key = 'секретно-секретный секрет'  # Замените на свой секретный ключ
+app = Flask(__name__)
+app.secret_key = 'секретно-секретный секрет'  # Замените на свой секретный ключ
+app.config['DB_TYPE'] = os.getenv('DB_TYPE', 'postgres')
+
+# del
+@app.route("/")
+@app.route("/index")
+def start():
+    return redirect("/menu", code=302)
+
+@app.route("/menu")
+def menu():
+    return """
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>НГТУ ФБ, Лабораторные работы</title>
+</head>
+<body>
+    <header>
+        НГТУ ФБ, WEB-программирование, часть 2. Список лабораторных  
+    </header>
+
+    <h1>web-сервер на flask</h1>
+    <li><a href="http://127.0.0.1:5000/lab1">Первая лабораторная</a></li>
+    <li><a href="http://127.0.0.1:5000/lab2">Вторая лабораторная</a></li>
+    <li><a href="http://127.0.0.1:5000/lab3">Третья лабораторная</a></li>
+    <li><a href="http://127.0.0.1:5000/lab4">Четвертая лабораторная</a></li>
+    <li><a href="http://127.0.0.1:5000/lab5">Пятая лабораторная</a></li>  
+    <li><a href="http://127.0.0.1:5000/lab6">Шестая лабораторная</a></li> 
+    <li><a href="http://127.0.0.1:5000/lab7">Седьмая лабораторная</a></li> 
+    <footer>
+        &copy: Бархатова Ольга, ФБИ-24, 3 курс, 2024
+    </footer>
+</body>
+</html>
+"""
+
+@app.errorhandler(404)
+def not_found_404(err):
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <title>НГТУ, ФБ, Лабораторные работы</title>
+        <link rel="stylesheet" href="''' + url_for('static', filename='lab1.css') + '''">
+    </head>
+    <body>
+        <header>
+            НГТУ, ФБ, WEB-программирование, часть 2. Список лабораторных
+        </header>
+        <h2>Ошибка 404 - такой страницы не существует</h2>
+        <footer>
+            &copy; Бархатова Ольга, ФБИ-24, 3 курс, 2024
+        </footer>
+    </body>
+</html>
+'''
+
+
+@app.errorhandler(500)
+def not_found_500(err):
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <title>НГТУ, ФБ, Лабораторные работы</title>
+        <link rel="stylesheet" href="''' + url_for('static', filename='lab1.css') + '''">
+    </head>
+    <body>
+        <header>
+            НГТУ, ФБ, WEB-программирование, часть 2. Список лабораторных
+        </header>
+        <h2>Ошибка 500 - сервер не смог обработать запрос</h2>
+        <footer>
+            &copy; Бархатова Ольга, ФБИ-24, 3 курс, 2024
+        </footer>
+    </body>
+</html>
+'''
+
+# del 
 
 # # Путь для загрузки аватарок
 # UPLOAD_FOLDER = 'static/avatars'
 # os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# def db_connect():
+#     if current_app.config['DB_TYPE'] == 'postgres':
+#         conn = psycopg2.connect (
+#             host = '127.0.0.1',
+#             database = 'olya_barkhatova_knowledge_base',
+#             user = 'olya_barkhatova_knowledge_base',
+#             password = '123'
+#     )
+#         cur = conn.cursor(cursor_factory=RealDictCursor)
+#     else:
+#         dir_path = path.dirname(path.realpath(__file__))
+#         db_path = path.join(dir_path, "database.db")
+#         conn = sqlite3.connect(db_path)
+#         conn.row_factory = sqlite3.Row
+#         cur = conn.cursor*()
 
+
+#     return conn, cur
+
+# def db_close(conn, cur):
+#     conn.commit()
+#     cur.close()
+#     conn.close()
 # # Функция подключения к базе данных
 # def db_connect():
 #     conn = psycopg2.connect(
