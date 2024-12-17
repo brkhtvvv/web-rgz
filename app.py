@@ -1,18 +1,18 @@
-from flask import Flask, request, render_template, redirect, url_for, session, flash
-from werkzeug.security import generate_password_hash, check_password_hash
-import psycopg2
-from psycopg2.extras import RealDictCursor
-import os
+# from flask import Flask, request, render_template, redirect, url_for, session, flash
+# from werkzeug.security import generate_password_hash, check_password_hash
+# import psycopg2
+# from psycopg2.extras import RealDictCursor
+# import os
 
 print('kkkkkkkkkkkkkkkkkkkkkkkkkkk')
 # Настройка приложения Flask
-app = Flask(__name__)
-app.secret_key = 'секретно-секретный секрет'  # Замените на свой секретный ключ
+# app = Flask(__name__)
+# app.secret_key = 'секретно-секретный секрет'  # Замените на свой секретный ключ
 
-# Путь для загрузки аватарок
-UPLOAD_FOLDER = 'static/avatars'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# # Путь для загрузки аватарок
+# UPLOAD_FOLDER = 'static/avatars'
+# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # # Функция подключения к базе данных
 # def db_connect():
@@ -116,6 +116,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 #     flash('Вы вышли из системы.', 'success')
 #     return redirect(url_for('index'))
 
-if __name__ == '__main__':
-    app.debug = True
-    app.run()
+# if __name__ == '__main__':
+#     app.debug = True
+#     app.run()
