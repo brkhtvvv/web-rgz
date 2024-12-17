@@ -221,7 +221,183 @@
 # # #     app.debug = True
 # # #     app.run()
 
-from flask import Flask, request, render_template, redirect, url_for, session, flash
+# from flask import Flask, request, render_template, redirect, url_for, session, flash
+# from werkzeug.security import generate_password_hash, check_password_hash
+# import psycopg2
+# from psycopg2.extras import RealDictCursor
+# import os
+
+# # Настройка приложения Flask
+# app = Flask(__name__)
+# app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'секретно-секретный секрет')
+# app.config['DB_TYPE'] = os.getenv('DB_TYPE', 'postgres')
+# # Путь для загрузки аватарок
+# UPLOAD_FOLDER = 'static/avatars'
+# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
+
+# # Функция подключения к базе данных
+# def db_connect():
+#     try:
+#         conn = psycopg2.connect(
+#             host='127.0.0.1',
+#             database='olga_barkhatova_knowledge_bace',
+#             user='olga_barkhatova_knowledge_bace',
+#             password='123'
+#         )
+#         cur = conn.cursor(cursor_factory=RealDictCursor)
+
+#         return conn, cur
+#     except Exception as e:
+#         print(f"Ошибка подключения к базе данных: {e}")
+#         return None, None
+
+# def db_close(conn, cur):
+#     conn.commit()
+#     cur.close()
+#     conn.close()
+
+
+# # Главная страница перенаправляет на страницу входа
+# @app.route("/")
+# def index():
+#     return redirect(url_for('login'))
+
+# # Страница регистрации
+# @app.route('/register', methods=['GET', 'POST'])
+# def register():
+#     if request.method == 'POST':
+#         login = request.form['login']
+#         password = request.form['password']
+#         fullname = request.form['fullname']
+#         email = request.form['email']
+#         about = request.form.get('about', '')
+#         avatar = request.files.get('avatar')
+
+#         # Проверка на заполненность полей
+#         if not (login and password and fullname and email):
+#             flash('Пожалуйста, заполните все обязательные поля.', 'error')
+#             return redirect(url_for('register'))
+
+#         # Обработка аватарки
+#         avatar_filename = None
+#         if avatar and avatar.filename:
+#             avatar_filename = os.path.join(app.config['UPLOAD_FOLDER'], avatar.filename)
+#             avatar.save(avatar_filename)
+
+#         # Хеширование пароля
+#         hashed_password = generate_password_hash(password)
+
+#         # Вставка данных в БД
+#         conn, cur = db_connect()
+#         try:
+#             cur.execute("""
+#                 INSERT INTO users (login, password, fullname, email, about, avatar)
+#                 VALUES (%s, %s, %s, %s, %s, %s)
+#             """, (login, hashed_password, fullname, email, about, avatar_filename))
+#             conn.commit()
+#             flash('Регистрация прошла успешно!', 'success')
+#             return redirect(url_for('login'))
+#         except psycopg2.Error as e:
+#             flash(f'Ошибка регистрации: {e.pgerror}', 'error')
+#             return redirect(url_for('register'))
+#         finally:
+#             conn.close()
+
+#     return render_template('register.html')
+
+# # Страница авторизации
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         login = request.form['login']
+#         password = request.form['password']
+
+#         # Проверка заполненности полей
+#         if not (login and password):
+#             flash('Заполните все поля.', 'error')
+#             return redirect(url_for('login'))
+
+#         # Проверка пользователя в базе данных
+#         conn, cur = db_connect()
+#         cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
+#         user = cur.fetchone()
+#         conn.close()
+
+#         if user and check_password_hash(user['password'], password):
+#             session['user_id'] = user['id']
+#             session['fullname'] = user['fullname']
+#             flash('Вы успешно вошли в систему!', 'success')
+#             return redirect(url_for('profile'))
+#         else:
+#             flash('Неправильный логин или пароль.', 'error')
+
+#     return render_template('login.html')
+
+# # Страница профиля пользователя
+# @app.route('/profile')
+# def profile():
+#     if 'user_id' not in session:
+#         flash('Сначала войдите в систему.', 'error')
+#         return redirect(url_for('login'))
+
+#     return f"""
+# <!DOCTYPE html>
+# <html lang="ru">
+# <head>
+#     <title>Профиль пользователя</title>
+# </head>
+# <body>
+#     <h1>Добро пожаловать, {session['fullname']}!</h1>
+#     <p>Это ваша страница профиля.</p>
+#     <a href="{url_for('logout')}">Выйти из системы</a>
+# </body>
+# </html>
+# """
+
+# # Выход из системы
+# @app.route('/logout')
+# def logout():
+#     session.clear()
+#     flash('Вы вышли из системы.', 'success')
+#     return redirect(url_for('login'))
+
+# # Обработчики ошибок
+# @app.errorhandler(404)
+# def not_found_404(err):
+#     return '''
+# <!doctype html>
+# <html>
+#     <head>
+#         <title>Ошибка 404</title>
+#     </head>
+#     <body>
+#         <h2>Ошибка 404 - такой страницы не существует</h2>
+#     </body>
+# </html>
+# '''
+
+# @app.errorhandler(500)
+# def not_found_500(err):
+#     return '''
+# <!doctype html>
+# <html>
+#     <head>
+#         <title>Ошибка 500</title>
+#     </head>
+#     <body>
+#         <h2>Ошибка 500 - сервер не смог обработать запрос</h2>
+#     </body>
+# </html>
+# '''
+
+# if __name__ == '__main__':
+#     app.debug = True
+#     app.run()
+
+from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -236,48 +412,59 @@ UPLOAD_FOLDER = 'static/avatars'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Конфигурация базы данных
+app.config['DB_TYPE'] = 'postgres'  # Можно переключить на 'sqlite', если потребуется
+
 # Функция подключения к базе данных
 def db_connect():
     try:
-        conn = psycopg2.connect(
-            host='127.0.0.1',
-            database='olga_barkhatova_knowledge_bace',
-            user='olga_barkhatova_knowledge_bace',
-            password='123'
-        )
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        flash('connected')
+        if app.config['DB_TYPE'] == 'postgres':
+            conn = psycopg2.connect(
+                host='127.0.0.1',
+                database='olga_barkhatova_knowledge_bace',
+                user='olga_barkhatova_knowledge_bace',
+                password='123'
+            )
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+        else:
+            raise Exception("Не поддерживается тип базы данных.")
         return conn, cur
     except Exception as e:
         print(f"Ошибка подключения к базе данных: {e}")
         return None, None
 
 def db_close(conn, cur):
-    conn.commit()
-    cur.close()
-    conn.close()
+    if conn and cur:
+        conn.commit()
+        cur.close()
+        conn.close()
 
-
-# Главная страница перенаправляет на страницу входа
+# Главная страница
 @app.route("/")
 def index():
     return redirect(url_for('login'))
 
-# Страница регистрации
+# Регистрация
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        login = request.form['login']
-        password = request.form['password']
-        fullname = request.form['fullname']
-        email = request.form['email']
+        login = request.form.get('login', '')
+        password = request.form.get('password', '')
+        fullname = request.form.get('fullname', '')
+        email = request.form.get('email', '')
         about = request.form.get('about', '')
         avatar = request.files.get('avatar')
 
-        # Проверка на заполненность полей
-        if not (login and password and fullname and email):
-            flash('Пожалуйста, заполните все обязательные поля.', 'error')
-            return redirect(url_for('register'))
+        errors = {}
+        if not login:
+            errors['login'] = 'Поле "Логин" обязательно.'
+        if not password:
+            errors['password'] = 'Поле "Пароль" обязательно.'
+        if not fullname:
+            errors['fullname'] = 'Поле "Имя" обязательно.'
+        if errors:
+            flash(errors, 'error')
+            return render_template('register.html', errors=errors)
 
         # Обработка аватарки
         avatar_filename = None
@@ -285,12 +472,16 @@ def register():
             avatar_filename = os.path.join(app.config['UPLOAD_FOLDER'], avatar.filename)
             avatar.save(avatar_filename)
 
-        # Хеширование пароля
         hashed_password = generate_password_hash(password)
 
-        # Вставка данных в БД
+        # Проверка существующего пользователя и регистрация
         conn, cur = db_connect()
         try:
+            cur.execute("SELECT login FROM users WHERE login=%s;", (login,))
+            if cur.fetchone():
+                flash('Такой пользователь уже существует.', 'error')
+                return redirect(url_for('register'))
+
             cur.execute("""
                 INSERT INTO users (login, password, fullname, email, about, avatar)
                 VALUES (%s, %s, %s, %s, %s, %s)
@@ -298,62 +489,55 @@ def register():
             conn.commit()
             flash('Регистрация прошла успешно!', 'success')
             return redirect(url_for('login'))
-        except psycopg2.Error as e:
-            flash(f'Ошибка регистрации: {e.pgerror}', 'error')
-            return redirect(url_for('register'))
+        except Exception as e:
+            print(f"Ошибка регистрации: {e}")
+            flash('Ошибка при регистрации.', 'error')
         finally:
-            conn.close()
+            db_close(conn, cur)
 
     return render_template('register.html')
 
-# Страница авторизации
+# Авторизация
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login = request.form['login']
-        password = request.form['password']
+        login = request.form.get('login', '')
+        password = request.form.get('password', '')
 
-        # Проверка заполненности полей
-        if not (login and password):
+        if not login or not password:
             flash('Заполните все поля.', 'error')
             return redirect(url_for('login'))
 
-        # Проверка пользователя в базе данных
         conn, cur = db_connect()
-        cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
-        user = cur.fetchone()
-        conn.close()
-
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
-            session['fullname'] = user['fullname']
-            flash('Вы успешно вошли в систему!', 'success')
-            return redirect(url_for('profile'))
-        else:
-            flash('Неправильный логин или пароль.', 'error')
+        try:
+            cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
+            user = cur.fetchone()
+            if user and check_password_hash(user['password'], password):
+                session['user_id'] = user['id']
+                session['fullname'] = user['fullname']
+                flash('Вы успешно вошли в систему!', 'success')
+                return redirect(url_for('profile'))
+            else:
+                flash('Неправильный логин или пароль.', 'error')
+        except Exception as e:
+            print(f"Ошибка авторизации: {e}")
+            flash('Ошибка при входе.', 'error')
+        finally:
+            db_close(conn, cur)
 
     return render_template('login.html')
 
-# Страница профиля пользователя
+# Профиль пользователя
 @app.route('/profile')
 def profile():
     if 'user_id' not in session:
         flash('Сначала войдите в систему.', 'error')
         return redirect(url_for('login'))
-
     return f"""
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <title>Профиль пользователя</title>
-</head>
-<body>
     <h1>Добро пожаловать, {session['fullname']}!</h1>
     <p>Это ваша страница профиля.</p>
     <a href="{url_for('logout')}">Выйти из системы</a>
-</body>
-</html>
-"""
+    """
 
 # Выход из системы
 @app.route('/logout')
@@ -365,33 +549,12 @@ def logout():
 # Обработчики ошибок
 @app.errorhandler(404)
 def not_found_404(err):
-    return '''
-<!doctype html>
-<html>
-    <head>
-        <title>Ошибка 404</title>
-    </head>
-    <body>
-        <h2>Ошибка 404 - такой страницы не существует</h2>
-    </body>
-</html>
-'''
+    return '<h2>Ошибка 404 - такой страницы не существует</h2>', 404
 
 @app.errorhandler(500)
 def not_found_500(err):
-    return '''
-<!doctype html>
-<html>
-    <head>
-        <title>Ошибка 500</title>
-    </head>
-    <body>
-        <h2>Ошибка 500 - сервер не смог обработать запрос</h2>
-    </body>
-</html>
-'''
+    return '<h2>Ошибка 500 - сервер не смог обработать запрос</h2>', 500
 
 if __name__ == '__main__':
     app.debug = True
     app.run()
-
