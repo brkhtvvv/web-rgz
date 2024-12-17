@@ -246,10 +246,10 @@ def db_connect():
             password='123'
         )
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        return redirect(url_for('login'))
+        return conn, cur
     except Exception as e:
         print(f"Ошибка подключения к базе данных: {e}")
-        return redirect(url_for('login'))
+        return redirect(url_for('register'))
 
 
 # Главная страница перенаправляет на страницу входа
