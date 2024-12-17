@@ -645,14 +645,15 @@ def login_page():
         cur.execute("SELECT * FROM users WHERE login=?;", (login,))
     
     user = cur.fetchone()
-    if not user or not check_password_hash(user['password_user'], password):
+    if not user or not check_password_hash(user['password'], password):
         db_close(conn, cur)
         errors['notExist'] = 'Логин и/или пароль неверны'
         return render_template('login.html', errors=errors, login=login)
     
     session['login'] = login
     db_close(conn, cur)
-    return redirect('/storage')
+    # flash('Вы успешно вошли в систему!', 'success')
+    return redirect(('profile'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
@@ -674,9 +675,9 @@ def register_page():
     conn, cur = db_connect()
 
     if current_app.config['DB_TYPE'] == 'postgres':
-        cur.execute("SELECT login FROM users WHERE login_user=%s;", (login, ))
+        cur.execute("SELECT login FROM users WHERE login=%s;", (login, ))
     else:
-        cur.execute("SELECT login FROM users WHERE login_user=?;", (login, ))
+        cur.execute("SELECT login FROM users WHERE login=?;", (login, ))
     if cur.fetchone():
         errors['anyExist'] = 'Такой пользователь уже существует'
         return render_template('register.html', errors=errors, login=login)
@@ -684,7 +685,7 @@ def register_page():
     password_hash = generate_password_hash(password)
 
     if current_app.config['DB_TYPE'] == 'postgres':
-        cur.execute("INSERT INTO users (login, passwordr) VALUES (%s, %s);", (login, password_hash))
+        cur.execute("INSERT INTO users (login, password) VALUES (%s, %s);", (login, password_hash))
     else:
         cur.execute("INSERT INTO users (login, password) VALUES (?, ?);", (login, password_hash))
     db_close(conn, cur)
