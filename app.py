@@ -221,7 +221,7 @@
 # #     app.debug = True
 # #     app.run()
 
-from flask import Flask, request, render_template, redirect, url_for, session, flash, current_app
+from flask import Flask, request, render_template, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -230,7 +230,6 @@ import os
 # Настройка приложения Flask
 app = Flask(__name__)
 app.secret_key = 'секретно-секретный секрет'  # Замените на свой секретный ключ
-app.config['DB_TYPE'] = os.getenv('DB_TYPE', 'postgres')
 
 # Путь для загрузки аватарок
 UPLOAD_FOLDER = 'static/avatars'
@@ -248,39 +247,10 @@ def db_connect():
     cur = conn.cursor(cursor_factory=RealDictCursor)
     return conn, cur
 
-# Маршрут для главной страницы
+# Главная страница перенаправляет на страницу входа
 @app.route("/")
-@app.route("/index")
-def start():
-    return redirect("/menu", code=302)
-
-@app.route("/menu")
-def menu():
-    return """
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <title>НГТУ ФБ, Лабораторные работы</title>
-</head>
-<body>
-    <header>
-        НГТУ ФБ, WEB-программирование, часть 2. Список лабораторных  
-    </header>
-
-    <h1>web-сервер на flask</h1>
-    <li><a href="http://127.0.0.1:5000/lab1">Первая лабораторная</a></li>
-    <li><a href="http://127.0.0.1:5000/lab2">Вторая лабораторная</a></li>
-    <li><a href="http://127.0.0.1:5000/lab3">Третья лабораторная</a></li>
-    <li><a href="http://127.0.0.1:5000/lab4">Четвертая лабораторная</a></li>
-    <li><a href="http://127.0.0.1:5000/lab5">Пятая лабораторная</a></li>  
-    <li><a href="http://127.0.0.1:5000/lab6">Шестая лабораторная</a></li> 
-    <li><a href="http://127.0.0.1:5000/lab7">Седьмая лабораторная</a></li> 
-    <footer>
-        &copy: Бархатова Ольга, ФБИ-24, 3 курс, 2024
-    </footer>
-</body>
-</html>
-"""
+def index():
+    return redirect(url_for('login'))
 
 # Страница регистрации
 @app.route('/register', methods=['GET', 'POST'])
@@ -347,18 +317,39 @@ def login():
             session['user_id'] = user['id']
             session['fullname'] = user['fullname']
             flash('Вы успешно вошли в систему!', 'success')
-            return redirect(url_for('menu'))
+            return redirect(url_for('profile'))
         else:
             flash('Неправильный логин или пароль.', 'error')
 
     return render_template('login.html')
+
+# Страница профиля пользователя
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        flash('Сначала войдите в систему.', 'error')
+        return redirect(url_for('login'))
+
+    return f"""
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Профиль пользователя</title>
+</head>
+<body>
+    <h1>Добро пожаловать, {session['fullname']}!</h1>
+    <p>Это ваша страница профиля.</p>
+    <a href="{url_for('logout')}">Выйти из системы</a>
+</body>
+</html>
+"""
 
 # Выход из системы
 @app.route('/logout')
 def logout():
     session.clear()
     flash('Вы вышли из системы.', 'success')
-    return redirect(url_for('menu'))
+    return redirect(url_for('login'))
 
 # Обработчики ошибок
 @app.errorhandler(404)
