@@ -20,7 +20,7 @@ def db_connect():
         port='5000',
         database='olga_barkhatova_knowledge_bace',
         user='olga_barkhatova_knowledge_bace',  # Укажите ваше имя пользователя БД
-        password='123'  # Укажите ваш пароль
+        password='postgres'  # Укажите ваш пароль
     )
     cur = conn.cursor(cursor_factory=RealDictCursor)
     return conn, cur
